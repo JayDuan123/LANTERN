@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>LANTERN</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400&display=swap">
+<meta name="description" content="LANTERN: a lesion detector improved from its own misses. Failure census, four-level revision by an LLM mentor, and frozen verification raise a 4B MLLM from M=.747 to .921 for small brain metastases.">
+<style>
+*{box-sizing:border-box}body{margin:0}img{max-width:100%}
+
+:root{
+  --bg:#ffffff; --bg-soft:#faf6ef; --fg:#1f1a14; --fg-2:#4d4539; --muted:#7a7062;
+  --line:#ebe4d8; --accent:#b45f06; --accent-soft:#fbefdc; --accent-ink:#8a4500;
+  --bar-base:#c9c1b4; --bar-r0:#e8b46e;
+  --btn:#28221b; --btn-fg:#ffffff; --code:#f7f3ec; --good:#1f7a55;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#15130f; --bg-soft:#1e1b16; --fg:#efe9df; --fg-2:#cdc4b5; --muted:#9a907f;
+  --line:#312c24; --accent:#f0a64a; --accent-soft:#33271a; --accent-ink:#f5bd73;
+  --bar-base:#5a5348; --bar-r0:#9a6a2c;
+  --btn:#efe9df; --btn-fg:#15130f; --code:#1f1c17; --good:#5cc79a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#15130f; --bg-soft:#1e1b16; --fg:#efe9df; --fg-2:#cdc4b5; --muted:#9a907f;
+  --line:#312c24; --accent:#f0a64a; --accent-soft:#33271a; --accent-ink:#f5bd73;
+  --bar-base:#5a5348; --bar-r0:#9a6a2c;
+  --btn:#efe9df; --btn-fg:#15130f; --code:#1f1c17; --good:#5cc79a; color-scheme:dark}
+body{background:var(--bg);color:var(--fg);font:16px/1.65 Inter,"Helvetica Neue",Helvetica,Arial,sans-serif;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:960px;margin:0 auto}
+.narrow{max-width:760px;margin:0 auto}
+header{text-align:center;padding-block:56px 28px}
+.venue{display:inline-block;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent-ink);
+  background:var(--accent-soft);border-radius:99px;padding:3px 12px;margin-bottom:18px}
+h1{font-size:clamp(28px,4.4vw,44px);line-height:1.18;font-weight:700;margin:0 0 6px;text-wrap:balance;letter-spacing:-.01em}
+h1 .name{color:var(--accent)}
+.sub{font-size:clamp(17px,2.2vw,21px);color:var(--fg-2);margin:0 auto 22px;max-width:760px;text-wrap:balance}
+.authors{font-size:17px;color:var(--fg)}
+.authors sup{color:var(--accent);font-size:.7em}
+.aff{color:var(--muted);font-size:15px;margin-top:2px}
+.btns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:22px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--btn);color:var(--btn-fg);text-decoration:none;
+  border-radius:99px;padding:8px 18px;font-size:15px;font-weight:500}
+.btn svg{width:17px;height:17px;fill:currentColor}
+.btn.soon{opacity:.45;cursor:default}
+.btn small{font-size:12px;opacity:.8}
+figure{margin:0}
+figure img{display:block;width:100%;height:auto;border-radius:8px;background:#fff}
+figcaption{font-size:14.5px;color:var(--fg-2);margin-top:10px;line-height:1.55}
+figcaption b{color:var(--fg)}
+section{padding-block:40px;border-top:1px solid var(--line)}
+h2{font-size:28px;font-weight:700;text-align:center;margin:0 0 22px;letter-spacing:-.01em}
+h3{font-size:19px;font-weight:600;margin:30px 0 8px}
+p{margin:0 0 14px}
+.abstract p{text-align:justify;hyphens:auto}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0}
+.card{background:var(--bg-soft);border:1px solid var(--line);border-radius:10px;padding:16px 18px}
+.card h4{margin:0 0 6px;font-size:16px;font-weight:600}
+.card p{margin:0;font-size:15px;color:var(--fg-2)}
+.tasks{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:18px 0 8px}
+.task{border:1px solid var(--line);border-radius:10px;padding:14px}
+.task .k{font-size:12px;letter-spacing:.07em;text-transform:uppercase;color:var(--accent-ink);font-weight:600}
+.task .t{font-weight:600;margin:4px 0 4px}
+.task p{font-size:14px;color:var(--fg-2);margin:0}
+ol.steps{counter-reset:s;list-style:none;padding:0;margin:16px 0}
+ol.steps li{counter-increment:s;position:relative;padding-left:44px;margin-bottom:14px}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:1px;width:28px;height:28px;border-radius:50%;
+  background:var(--accent);color:var(--bg);font-weight:600;font-size:14px;display:grid;place-items:center}
+.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:22px 0}
+.stat{background:var(--bg-soft);border-radius:10px;padding:16px 14px;text-align:center}
+.stat .v{font-size:30px;font-weight:700;color:var(--accent);line-height:1.1}
+.stat .v span{font-size:15px;color:var(--muted);font-weight:500}
+.stat .l{font-size:13.5px;color:var(--fg-2);margin-top:6px;line-height:1.4}
+.take{border-left:3px solid var(--accent);background:var(--accent-soft);padding:12px 16px;border-radius:0 8px 8px 0;margin:16px 0 4px}
+.take b{color:var(--accent-ink)}
+.tbl{overflow-x:auto;margin:14px 0}
+table{border-collapse:collapse;width:100%;font-size:14.5px;font-variant-numeric:tabular-nums}
+th,td{padding:7px 10px;text-align:right;border-bottom:1px solid var(--line);white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+thead th{font-weight:600;color:var(--fg-2);font-size:13px;border-bottom:1.5px solid var(--fg-2)}
+thead tr.top th{text-align:center;border-bottom:1px solid var(--line)}
+tr.grp td{background:var(--bg-soft);color:var(--muted);font-size:12.5px;text-transform:uppercase;letter-spacing:.06em;text-align:left;padding:4px 10px}
+tr.ours td{font-weight:600;color:var(--accent-ink)}
+td.best{font-weight:700}
+td.l,th.l{text-align:left;white-space:normal}
+tr.rej td{color:var(--muted)}
+.acc{color:var(--good);font-weight:600}
+.note{font-size:13.5px;color:var(--muted)}
+.two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:22px;align-items:start}
+pre{background:var(--code);border:1px solid var(--line);border-radius:8px;padding:16px;overflow-x:auto;
+  font:13.5px/1.55 "JetBrains Mono",ui-monospace,Menlo,monospace;color:var(--fg)}
+.copy{float:right;font:12px Inter,sans-serif;background:var(--btn);color:var(--btn-fg);border:0;border-radius:6px;padding:4px 10px;cursor:pointer}
+footer{border-top:1px solid var(--line);padding-block:28px 40px;text-align:center;font-size:13.5px;color:var(--muted)}
+footer a{color:var(--muted)}
+
+/* teaser chart: three small multiples, one series each */
+.chart{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;margin:8px 0 0}
+.panel h4{margin:0 0 10px;font-size:14.5px;font-weight:600;text-align:center}
+.panel h4 span{display:block;font-weight:400;color:var(--muted);font-size:12.5px}
+.row{display:grid;grid-template-columns:118px minmax(0,1fr);align-items:center;gap:8px;margin:5px 0;font-size:13px}
+.row .n{color:var(--fg-2);text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row.us .n{color:var(--accent-ink);font-weight:600}
+.track{position:relative;height:20px;border-left:1px solid var(--muted)}
+.bar{position:absolute;left:0;top:2px;bottom:2px;background:var(--bar-base);border-radius:0 4px 4px 0}
+.row.r0 .bar{background:var(--bar-r0)}
+.row.us .bar{background:var(--accent)}
+.row .v{position:absolute;top:0;line-height:20px;font-size:12.5px;color:var(--fg-2);padding-left:6px;font-variant-numeric:tabular-nums}
+.row.us .v{color:var(--fg);font-weight:600}
+.row:hover .bar{filter:brightness(1.08)}
+@media (max-width:760px){
+  .cards,.two,.chart{grid-template-columns:minmax(0,1fr)}
+  .tasks,.stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<header>
+  <div class="venue">Under review</div>
+  <h1>Can Its Own Misses Teach an MLLM to Find Small Brain Metastases?</h1>
+  <p class="sub"><span style="color:var(--accent);font-weight:600">LANTERN</span>: Lesion-finding AgeNt Through Error-driven Recursive learNing</p>
+  <div class="authors">Yixuan Duan<sup>1</sup>, Kexin Geng<sup>1</sup>, Hanwen Xu<sup>2,†</sup>, Wei Qiu<sup>1,†</sup></div>
+  <div class="aff"><sup>1</sup>Rice University &nbsp;&nbsp; <sup>2</sup>University of Pennsylvania</div>
+  <div class="aff" style="font-size:13.5px"><sup>†</sup>Co-last authors</div>
+  <div class="btns">
+    <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5zM8.5 12h9v1.5h-9V12zm0 3.5h9V17h-9v-1.5z"/></svg>Paper <small>soon</small></a>
+    <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code <small>soon</small></a>
+    <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5zm0 2.3 6.6 3.7L12 11.7 5.4 8 12 4.3zM5 9.7l6 3.4v6.6l-6-3.3V9.7zm8 10V13.1l6-3.4v6.7l-6 3.3z"/></svg>Model <small>soon</small></a>
+    <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v3H4V4zm0 5h16v11H4V9zm3 3v2h10v-2H7zm0 4v2h7v-2H7z"/></svg>Round ledger <small>soon</small></a>
+  </div>
+</header>
+
+<figure>
+  <div class="chart" id="teaser" role="img" aria-label="Bar chart of M for LANTERN r15, LANTERN r0 and the two strongest frontier MLLMs on three datasets"></div>
+  <figcaption><b>LANTERN (4B) vs. the strongest frontier MLLMs.</b> <i>M</i> = mean recall at 0.25, 0.5, 1 and 2 false positives per scan (lesions ≥ 0.1 mL). r0 is the starting system; r15 is the system after 15 unattended rounds. The full comparison is in the table below.</figcaption>
+</figure>
+</div>
+
+<section class="abstract"><div class="narrow">
+  <h2>Abstract</h2>
+  <p>Small brain metastases decide whether a patient can receive radiosurgery, yet they are the lesions most often missed, and frontier multimodal large language models (MLLMs) read MRI poorly. Improving a lesion detector is typically a slow process of trial and error, and automated approaches, from architecture search to LLM agents, are steered by a single score. However, a score indicates <em>whether</em> a change helped, not <em>where</em> the system fails or what should change next.</p>
+  <p>Instead, we hypothesize that a system's own misses, attributed to their causes, can drive reliable recursive self-improvement. To this end, we introduce <b>LANTERN</b> (<b>L</b>esion-finding <b>A</b>ge<b>N</b>t <b>T</b>hrough <b>E</b>rror-driven <b>R</b>ecursive lear<b>N</b>ing), which couples (1) a <em>failure census</em> that attributes every missed lesion to one of four causes, (2) a <em>four-level revision</em> space (evidence acquisition, visual representation, learning policy and decision aggregation) in which an LLM mentor implements one revision per round, guided by the census, and (3) <em>frozen verification and audit</em>, which accepts a revision only under a rule fixed before the first round, with no access to test data and with every tool call audited.</p>
+  <p>Over 15 unattended rounds, LANTERN raises a 4B MLLM from <i>M</i>&nbsp;=&nbsp;.747 to .921 on held-out BraTS-MET, from .641 to .865 on an external cohort and from .607 to .740 on unseen meningiomas, well above frontier MLLMs evaluated under the same protocol (.23–.46). Ablations show that every revision level contributes, the frozen rule rejects 7 of 15 proposed revisions, and the accepted revisions mirror radiological practice.</p>
+</div></section>
+
+<section><div class="narrow">
+  <h2>Why learn from misses, not from a score</h2>
+  <p>Radiosurgery now treats up to ten brain metastases without whole-brain irradiation, so every lesion has to be found before it can be planned. The ones most often missed are the smallest, a few millimetres across. Frontier MLLMs find almost every lesion above 5&nbsp;mL but fewer than 30% of those between 0.1 and 1&nbsp;mL.</p>
+  <p>A score says whether a change helped. It does not say why a lesion was lost: a lesion that fell between surveyed slices, one that was shown but not recognised, and one ranked below the false-positive budget all lower the score equally, yet each calls for a different fix. Improving a detector from its own misses, round after round, raises three problems.</p>
+  <div class="cards">
+    <div class="card"><h4>Error attribution</h4><p>The usual evaluation reports one number per system, not why each lesion was missed.</p></div>
+    <div class="card"><h4>Coupled revisions</h4><p>Thinner slices show more lesions but also yield more false positives; a larger view helps only after retraining. A revision must be free enough to change any part, yet small enough to be attributed.</p></div>
+    <div class="card"><h4>Trustworthy inheritance</h4><p>Every accepted change is built on by all later rounds. Validation sets are small, retraining alone moves a score by several points, and an agent that sees test data or adjusts its own rule can produce gains that do not exist.</p></div>
+  </div>
+  <div class="take"><b>Key idea.</b> Attribute every missed lesion to one cause, let an LLM mentor revise the one part of the system that cause points to, and keep the revision only if a rule frozen before the first round finds that it helps on validation data.</div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>How LANTERN works</h2>
+  <figure>
+    <img src="static/pipeline.png" alt="One round of LANTERN on round 3: failure census, four-level revision by the mentor, frozen verification by the examiner">
+    <figcaption><b>One round of LANTERN</b>, shown on round 3. (1) The failure census assigns every missed validation lesion one cause. (2) The mentor pre-registers a hypothesis and implements one revision at one of four levels. (3) A frozen examiner accepts or rejects it on validation only.</figcaption>
+  </figure>
+  <div class="narrow">
+  <ol class="steps">
+    <li><b>Failure census.</b> The trainee, a 4B MLLM (Qwen3-VL-4B), reads every validation scan slice by slice and reports lesion centres as points. The points are lifted to 3D, merged and ranked. Every lesion missed at 1 false positive per scan gets exactly one cause: <em>not seen</em> (no read slice crosses it), <em>rejected</em> (found but ranked below the budget), <em>inconsistent</em> (a sibling training seed finds it) or <em>not recognized</em> (shown, and no seed reports it).</li>
+    <li><b>Four-level revision.</b> The mentor, an LLM coding agent (Claude Opus 5.5), reads the census and writes a ledger entry (cause, evidence, level, predicted effect) <em>before</em> running anything. It then implements one revision at one level as code, from changing the slice spacing to writing a new reinforcement-learning trainer.</li>
+    <li><b>Frozen verification and audit.</b> The examiner is fixed code, not an LLM. It accepts a revision only if validation <i>M</i> improves, averaged over three training seeds (on the first seed for re-ranking saved reads). The rule, splits and evaluation core are fixed before round 1. The mentor never sees test or external data, and all 373 of its tool calls are audited.</li>
+  </ol>
+  <h3>The four levels and the misses they target</h3>
+  </div>
+  <div class="tasks">
+    <div class="task"><div class="k">EA</div><div class="t">Evidence Acquisition</div><p>Slice spacing, views, number of reads. Targets <em>not seen</em>.</p></div>
+    <div class="task"><div class="k">VR</div><div class="t">Visual Representation</div><p>Render size, input encoding. Targets <em>not recognized</em>.</p></div>
+    <div class="task"><div class="k">LP</div><div class="t">Learning Policy</div><p>Training data, objective, reward. Targets <em>not recognized</em>, <em>inconsistent</em>.</p></div>
+    <div class="task"><div class="k">DA</div><div class="t">Decision Aggregation</div><p>Merging and ranking of reads. Targets <em>inconsistent</em>, <em>rejected</em>.</p></div>
+  </div>
+  <figure style="margin-top:22px">
+    <img src="static/failure_examples.png" alt="Four real validation examples, one per failure cause">
+    <figcaption><b>The four failure causes on real validation scans.</b> Green box: ground-truth lesion; orange +: reported point; magenta +: reported point outside the 1 FP per scan budget. (a) Not seen: the 5 mm survey reads <i>z</i>&nbsp;=&nbsp;34, the lesion spans <i>z</i>&nbsp;=&nbsp;30–33. (b) Not recognized: the lesion is on a read slice and no seed reports it. (c) Inconsistent: seed 20 misses a lesion that seed 22 finds on the same slice. (d) Rejected: r15 reports the lesion, but its candidate ranks below the budget.</figcaption>
+  </figure>
+</div></section>
+
+<section><div class="wrap">
+  <h2>Results</h2>
+  <div class="stats">
+    <div class="stat"><div class="v">.921</div><div class="l">test <i>M</i> after 15 rounds<br>(r0 .747; best frontier MLLM .460)</div></div>
+    <div class="stat"><div class="v">90.8<span>%</span></div><div class="l">recall of 0.1–1 mL lesions at 1 FP/scan<br>(r0 62.9%; Claude Opus 5.5 29.2%)</div></div>
+    <div class="stat"><div class="v">8<span> / 15</span></div><div class="l">revisions accepted by the frozen rule,<br>spanning all four levels</div></div>
+    <div class="stat"><div class="v">35<span> h</span></div><div class="l">unattended wall-clock time<br>(72.8 GPU-hours)</div></div>
+  </div>
+
+  <div class="narrow"><h3>Comparison with frontier MLLMs</h3>
+  <p>BraTS-MET test is held out from the run. BrainMetShare is an external cohort from another institution and scanner. BraTS-MEN-RT contains meningiomas, a tumour type the trainee was never trained on. Both external sets are read zero-shot. Every baseline reads like r0 (5 mm survey, 384 px views, same prompt, one read per view) and is aggregated and scored by the same code.</p></div>
+  <div class="tbl"><table>
+    <thead>
+      <tr class="top"><th></th><th colspan="3">BraTS-MET test</th><th colspan="3">BrainMetShare (external)</th><th colspan="3">MEN-RT (unseen type)</th></tr>
+      <tr><th>Model</th><th><i>M</i></th><th>R@1</th><th>Small</th><th><i>M</i></th><th>R@1</th><th>Small</th><th><i>M</i></th><th>R@1</th><th>Small</th></tr>
+    </thead>
+    <tbody>
+      <tr class="grp"><td colspan="10">Proprietary MLLMs</td></tr>
+      <tr><td>Gemini 3.7 Flash</td><td>.460</td><td>.510</td><td>.285</td><td>.342</td><td>.398</td><td>.265</td><td>.521</td><td>.580</td><td>.160</td></tr>
+      <tr><td>Claude Opus 5.5</td><td>.409</td><td>.513</td><td>.292</td><td>.290</td><td>.398</td><td>.273</td><td>.480</td><td>.470</td><td>.024</td></tr>
+      <tr><td>GPT-6.1 Sol</td><td>.250</td><td>.303</td><td>.065</td><td>.157</td><td>.185</td><td>.063</td><td>.383</td><td>.444</td><td>.040</td></tr>
+      <tr class="grp"><td colspan="10">Open-weight MLLMs</td></tr>
+      <tr><td>Qwen3.8-27B</td><td>.250</td><td>.323</td><td>.108</td><td>.159</td><td>.213</td><td>.099</td><td>.403</td><td>.455</td><td>.016</td></tr>
+      <tr><td>Gemma 4 31B</td><td>.231</td><td>.303</td><td>.104</td><td>.153</td><td>.204</td><td>.103</td><td>.405</td><td>.476</td><td>.040</td></tr>
+      <tr><td>MedGemma 27B</td><td>.002</td><td>.000</td><td>.000</td><td>.003</td><td>.003</td><td>.000</td><td>.007</td><td>.010</td><td>.008</td></tr>
+      <tr class="grp"><td colspan="10">Ours (4B)</td></tr>
+      <tr><td>Qwen3-VL-4B zero-shot</td><td>.107</td><td>.116</td><td>.004</td><td>.058</td><td>.054</td><td>.016</td><td>.229</td><td>.231</td><td>.000</td></tr>
+      <tr><td>LANTERN r0 (start)</td><td>.747</td><td>.747</td><td>.629</td><td>.641</td><td>.641</td><td>.569</td><td>.607</td><td>.646</td><td>.280</td></tr>
+      <tr class="ours"><td>LANTERN r15</td><td class="best">.921</td><td class="best">.937</td><td class="best">.908</td><td class="best">.865</td><td class="best">.885</td><td class="best">.862</td><td class="best">.740</td><td class="best">.769</td><td class="best">.573</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note narrow"><i>M</i>: mean recall at 0.25/0.5/1/2 FP per scan. R@1: recall at 1 FP per scan. Small: recall at 1 FP per scan for lesions of 0.1–1 mL. A point is a hit within 5 mm of a lesion ≥ 0.1 mL. LANTERN: mean of 3 training seeds.</p>
+
+  <div class="narrow">
+  <h3>The gain is largest on the smallest lesions</h3>
+  <p>At 1 FP per scan, r15 finds 90.8% of test lesions of 0.1–1 mL. On the 115 lesions of 0.05–0.1 mL, which lie below the main threshold and never served as training targets, recall rises from .151 to .638.</p>
+  </div>
+  <figure><img src="static/size_bins.png" alt="Recall at 1 FP per scan by lesion volume on three datasets"><figcaption><b>Recall at 1 FP per scan by lesion volume</b> on BraTS-MET test, BrainMetShare and MEN-RT.</figcaption></figure>
+
+  <div class="narrow">
+  <h3>More precise, and robust in harder scans</h3>
+  <p>r15's hits lie a median 1.2 mm from the lesion centroid (1.9–9.2 mm for the frontier MLLMs). Its slice-level specificity is .98 (at most .81 for any frontier MLLM). In scans with ten or more lesions it keeps .91 recall, while the best frontier MLLM falls to .33.</p>
+  <div class="take"><b>Takeaway.</b> Claude Opus 5.5 reaches <i>M</i>&nbsp;=&nbsp;.409 when it reads the scans itself. Acting as the mentor, the same LLM raised a 4B trainee to .921.</div>
+  </div>
+</div></section>
+
+<section><div class="wrap">
+  <h2>What LANTERN learned</h2>
+  <div class="two">
+    <figure><img src="static/trajectory.png" alt="M of every accepted system on validation, test and external data"><figcaption><b><i>M</i> of every accepted system</b> (mean of 3 seeds). Only validation was used for selection, and each accepted revision also raises test <i>M</i>: .747 → .779 → .802 → .842 → .869 → .876 → .906 → .920 → .921.</figcaption></figure>
+    <figure><img src="static/census.png" alt="Failure census of r0 and r15 on the test set"><figcaption><b>Failure census, r0 vs. r15</b>, test set at 1 FP per scan. Misses fall from 100 to 25 of 396 lesions; <em>not recognized</em>, the cause the mentor targeted most, falls from 82 to 18.</figcaption></figure>
+  </div>
+
+  <div class="narrow">
+  <h3>All 15 rounds</h3>
+  <p>The examiner accepted 8 revisions and rejected 7. Δ<i>M</i> is the validation change on which the frozen rule decided. The leave-one-out column removes that revision from r15 and reports test <i>M</i> (r15: .921).</p>
+  </div>
+  <div class="tbl narrow"><table>
+    <thead><tr><th>Round</th><th class="l">Level</th><th class="l">Revision</th><th>Val. Δ<i>M</i></th><th>Decision</th><th>Test without it</th></tr></thead>
+    <tbody>
+      <tr><td>r1</td><td class="l">EA</td><td class="l">survey spacing 5 → 2 mm</td><td>+.028</td><td class="acc">accept</td><td>.868</td></tr>
+      <tr><td>r2</td><td class="l">DA</td><td class="l">peak-intensity tie-break</td><td>+.023</td><td class="acc">accept</td><td>–</td></tr>
+      <tr><td>r3</td><td class="l">VR</td><td class="l">render 384 → 768 px</td><td>+.050</td><td class="acc">accept</td><td>.826</td></tr>
+      <tr class="rej"><td>r4</td><td class="l">EA</td><td class="l">sampled reads, pairwise ranking</td><td>−.002</td><td>reject</td><td></td></tr>
+      <tr><td>r5</td><td class="l">DA</td><td class="l">greedy-first + 4 sampled reads</td><td>+.044</td><td class="acc">accept</td><td>.918</td></tr>
+      <tr class="rej"><td>r6</td><td class="l">DA</td><td class="l">sampled-confirmation tie-break</td><td>−.001</td><td>reject</td><td></td></tr>
+      <tr class="rej"><td>r7</td><td class="l">VR</td><td class="l">1152 px views</td><td>−.012</td><td>reject</td><td></td></tr>
+      <tr><td>r8</td><td class="l">LP</td><td class="l">GRPO on top of SFT</td><td>+.018</td><td class="acc">accept</td><td>.905</td></tr>
+      <tr class="rej"><td>r9</td><td class="l">LP</td><td class="l">longer GRPO, <i>G</i> = 8</td><td>−.002</td><td>reject</td><td></td></tr>
+      <tr class="rej"><td>r10</td><td class="l">DA</td><td class="l">two-model report</td><td>−.001</td><td>reject</td><td></td></tr>
+      <tr class="rej"><td>r11</td><td class="l">VR</td><td class="l">2.5D RGB input</td><td>−.016</td><td>reject</td><td></td></tr>
+      <tr><td>r12</td><td class="l">DA</td><td class="l">merge radius 12 → 6 mm</td><td>+.031</td><td class="acc">accept</td><td>.891</td></tr>
+      <tr class="rej"><td>r13</td><td class="l">EA</td><td class="l">1 mm greedy read</td><td>−.002</td><td>reject</td><td></td></tr>
+      <tr><td>r14</td><td class="l">DA</td><td class="l">3D Hessian blobness score</td><td>+.015</td><td class="acc">accept</td><td>.906<sup>*</sup></td></tr>
+      <tr><td>r15</td><td class="l">DA</td><td class="l">one evidence scale</td><td>+.002</td><td class="acc">accept</td><td>.920</td></tr>
+    </tbody>
+  </table></div>
+  <p class="note narrow"><sup>*</sup>Removed together with r2. The r3 row is compared under greedy SFT reads.</p>
+
+  <div class="narrow">
+  <h3>Every gain comes with its explanation</h3>
+  <p>Round 12 shows the chain the ledger records for each revision. <b>Miss:</b> the census put the largest share of misses under <em>not recognized</em>. <b>Diagnosis:</b> the mentor wrote a new diagnostic over the raw points and found that 19 of the 50 lesions missed at 2 FP per scan had a greedy-read point within 5 mm: <em>“reports of a small lesion chain into a neighbouring cluster … the cluster's medoid then lies &gt;5 mm from the lesion.”</em> <b>Hypothesis,</b> written before the run: a 6 mm merge radius, <em>“chosen a priori, no sweep,”</em> keeps clusters compact relative to the 5 mm hit tolerance. <b>Verdict:</b> Δ<i>M</i> = +.031, positive on all three seeds, accepted; removing it later costs −.030 on test.</p>
+  <h3>Choices that mirror radiological practice</h3>
+  <p>Without being told, the mentor moved to thin slices (5 → 2 mm), as consensus imaging protocols for brain metastases prescribe; magnified the view (384 → 768 px); and added a compact-lesion prior that ranks round, enhancing nodules above tubular vessels with the same support.</p>
+  </div>
+  <div class="two narrow" style="margin-top:18px">
+    <div>
+      <h3 style="margin-top:0">r0 vs. r15 on held-out scans</h3>
+      <p>(a) A 0.84 mL lesion found by r15 and missed by r0. (b) A 0.10 mL lesion found by both. (c) The highest-scoring false positive of r15. (d) A 1.54 mL lesion missed by r15.</p>
+      <p class="note">Green box: ground-truth lesion; orange +: reported point.</p>
+    </div>
+    <figure><img src="static/supp_qualitative.png" alt="Four held-out examples read by r0 and r15"></figure>
+  </div>
+</div></section>
+
+<section><div class="narrow">
+  <h2>Contributions</h2>
+  <ol class="steps">
+    <li>A formulation of lesion-detector development as error-driven recursive self-improvement, in which the system's own misses, sorted by cause, decide which part is revised next.</li>
+    <li>LANTERN, which couples a failure census, a four-level revision space in which an LLM mentor implements one revision per round, and a frozen, audited verification protocol, so that every accepted gain is traceable to one revision and a pre-registered hypothesis.</li>
+    <li>An evaluation over 15 unattended rounds, in which a 4B MLLM improves from <i>M</i>&nbsp;=&nbsp;.747 to .921 on held-out BraTS-MET, with gains that hold on an external cohort and an unseen tumour type and that surpass frontier MLLMs evaluated under the same protocol.</li>
+  </ol>
+</div></section>
+
+<section><div class="narrow">
+  <h2>BibTeX</h2>
+  <pre id="bib"><button class="copy" type="button" id="copybtn">Copy</button>@inproceedings{duan2027lantern,
+  title     = {Can Its Own Misses Teach an {MLLM} to Find
+               Small Brain Metastases?},
+  author    = {Duan, Yixuan and Geng, Kexin and Xu, Hanwen and Qiu, Wei},
+  booktitle = {Under review},
+  year      = {2027}
+}</pre>
+</div></section>
+
+<footer>
+  Page layout inspired by the <a href="https://nerfies.github.io" target="_blank" rel="noopener">Nerfies</a> academic project page.
+</footer>
+
+<script>
+(function(){
+  const D=[
+    {t:'BraTS-MET test',s:'held out',r:[['Claude Opus 5.5',.409],['Gemini 3.7 Flash',.460],['LANTERN r0',.747,'r0'],['LANTERN r15',.921,'us']]},
+    {t:'BrainMetShare',s:'external institution',r:[['Claude Opus 5.5',.290],['Gemini 3.7 Flash',.342],['LANTERN r0',.641,'r0'],['LANTERN r15',.865,'us']]},
+    {t:'MEN-RT',s:'unseen tumour type',r:[['Claude Opus 5.5',.480],['Gemini 3.7 Flash',.521],['LANTERN r0',.607,'r0'],['LANTERN r15',.740,'us']]}];
+  const el=document.getElementById('teaser');
+  el.innerHTML=D.map(p=>'<div class="panel"><h4>'+p.t+'<span>'+p.s+'</span></h4>'+
+    p.r.map(([n,v,c])=>'<div class="row '+(c||'')+'" title="'+n+' on '+p.t+': M = '+v.toFixed(3).slice(1)+'"><div class="n">'+n.replace('LANTERN ','')+
+      '</div><div class="track"><div class="bar" style="width:'+(v*82)+'%"></div><div class="v" style="left:'+(v*82)+'%">'+v.toFixed(3).slice(1)+'</div></div></div>').join('')+'</div>').join('');
+})();
+document.getElementById('copybtn').addEventListener('click',async e=>{
+  const t=document.getElementById('bib').innerText.replace(/^Copy\s*/,'');
+  try{await navigator.clipboard.writeText(t);e.target.textContent='Copied'}
+  catch(_){const r=document.createRange();r.selectNodeContents(document.getElementById('bib'));const s=getSelection();s.removeAllRanges();s.addRange(r);e.target.textContent='Selected'}
+  setTimeout(()=>e.target.textContent='Copy',1500);
+});
+</script>
+</body>
+</html>
