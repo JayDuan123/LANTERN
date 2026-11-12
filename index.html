@@ -129,7 +129,8 @@ footer a{color:var(--muted)}
     <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6V2zm8 1.5V8h4.5L14 3.5zM8.5 12h9v1.5h-9V12zm0 3.5h9V17h-9v-1.5z"/></svg>Paper <small>soon</small></a>
     <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M12 .5a11.5 11.5 0 0 0-3.64 22.41c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.37-3.88-1.37-.52-1.33-1.28-1.69-1.28-1.69-1.05-.71.08-.7.08-.7 1.16.08 1.77 1.19 1.77 1.19 1.03 1.77 2.7 1.26 3.36.96.1-.75.4-1.26.73-1.55-2.55-.29-5.24-1.28-5.24-5.69 0-1.26.45-2.28 1.19-3.09-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.17 1.18a11 11 0 0 1 5.77 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.83 1.19 3.09 0 4.42-2.69 5.39-5.25 5.68.41.36.78 1.06.78 2.14v3.17c0 .31.21.67.8.56A11.5 11.5 0 0 0 12 .5z"/></svg>Code <small>soon</small></a>
     <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M12 2 3 7v10l9 5 9-5V7l-9-5zm0 2.3 6.6 3.7L12 11.7 5.4 8 12 4.3zM5 9.7l6 3.4v6.6l-6-3.3V9.7zm8 10V13.1l6-3.4v6.7l-6 3.3z"/></svg>Model <small>soon</small></a>
-    <a class="btn soon" aria-disabled="true"><svg viewBox="0 0 24 24"><path d="M4 4h16v3H4V4zm0 5h16v11H4V9zm3 3v2h10v-2H7zm0 4v2h7v-2H7z"/></svg>Round ledger <small>soon</small></a>
+    <a class="btn" href="explorer.html"><svg viewBox="0 0 24 24"><path d="M10 2a8 8 0 0 1 6.32 12.9l5.39 5.4-1.41 1.4-5.4-5.39A8 8 0 1 1 10 2zm0 2a6 6 0 1 0 0 12 6 6 0 0 0 0-12z"/></svg>Lesion explorer</a>
+    <a class="btn" href="viewer.html"><svg viewBox="0 0 24 24"><path d="M3 4h18v16H3V4zm2 2v12h14V6H5zm6 2h2v3h3v2h-3v3h-2v-3H8v-2h3V8z"/></svg>Scan viewer</a>
   </div>
 </header>
 
@@ -141,14 +142,14 @@ footer a{color:var(--muted)}
 
 <section class="abstract"><div class="narrow">
   <h2>Abstract</h2>
-  <p>Small brain metastases decide whether a patient can receive radiosurgery, yet they are the lesions most often missed, and frontier multimodal large language models (MLLMs) read MRI poorly. Improving a lesion detector is typically a slow process of trial and error, and automated approaches, from architecture search to LLM agents, are steered by a single score. However, a score indicates <em>whether</em> a change helped, not <em>where</em> the system fails or what should change next.</p>
-  <p>Instead, we hypothesize that a system's own misses, attributed to their causes, can drive reliable recursive self-improvement. To this end, we introduce <b>LANTERN</b> (<b>L</b>esion-finding <b>A</b>ge<b>N</b>t <b>T</b>hrough <b>E</b>rror-driven <b>R</b>ecursive lear<b>N</b>ing), which couples (1) a <em>failure census</em> that attributes every missed lesion to one of four causes, (2) a <em>four-level revision</em> space (evidence acquisition, visual representation, learning policy and decision aggregation) in which an LLM mentor implements one revision per round, guided by the census, and (3) <em>frozen verification and audit</em>, which accepts a revision only under a rule fixed before the first round, with no access to test data and with every tool call audited.</p>
-  <p>Over 15 unattended rounds, LANTERN raises a 4B MLLM from <i>M</i>&nbsp;=&nbsp;.747 to .921 on held-out BraTS-MET, from .641 to .865 on an external cohort and from .607 to .740 on unseen meningiomas, well above frontier MLLMs evaluated under the same protocol (.23–.46). Ablations show that every revision level contributes, the frozen rule rejects 7 of 15 proposed revisions, and the accepted revisions mirror radiological practice.</p>
+  <p>Multimodal large language models (MLLMs) are becoming general readers of medical images, yet they remain weak at locating small abnormalities. Brain metastases expose this gap: at 384&nbsp;px a 0.1&nbsp;mL lesion covers less than a quarter of one visual token, and at one false positive per scan frontier MLLMs find fewer than 30% of lesions of 0.1–1&nbsp;mL. Fine-tuning on one dataset helps but transfers poorly, and improving it further is slow trial and error steered by a single score.</p>
+  <p>We introduce <b>LANTERN</b> (<b>L</b>esion-finding <b>A</b>ge<b>N</b>t <b>T</b>hrough <b>E</b>rror-driven <b>R</b>ecursive lear<b>N</b>ing), a framework in which an MLLM improves recursively from its own misses. LANTERN recasts model development as an error-driven loop: a failure census attributes every missed lesion to one of four causes, an LLM mentor revises one of four levels (evidence acquisition, visual representation, learning policy, decision aggregation) per round, and a rule frozen before the first round decides what is kept, without test data and with every tool call audited.</p>
+  <p>Over 15 unattended rounds, LANTERN raises a fine-tuned 4B MLLM from finding 75% to 94% of lesions at one false positive per scan on BraTS-MET, and 91% of those of 0.1–1&nbsp;mL, compared with at most 51% and 29% for five frontier MLLMs read under the starting protocol; the gains hold on an external cohort (89%) and on unseen meningiomas (77%). These results show that an MLLM's own misses, attributed to their causes, can drive its reliable recursive self-improvement.</p>
 </div></section>
 
 <section><div class="narrow">
   <h2>Why learn from misses, not from a score</h2>
-  <p>Radiosurgery now treats up to ten brain metastases without whole-brain irradiation, so every lesion has to be found before it can be planned. The ones most often missed are the smallest, a few millimetres across. Frontier MLLMs find almost every lesion above 5&nbsp;mL but fewer than 30% of those between 0.1 and 1&nbsp;mL.</p>
+  <p>Radiosurgery now treats up to ten brain metastases without whole-brain irradiation, so every lesion has to be found before it can be planned. The ones most often missed are the smallest, a few millimetres across. The strongest frontier MLLMs find almost every lesion above 5&nbsp;mL at one false positive per scan, but fewer than 30% of those between 0.1 and 1&nbsp;mL.</p>
   <p>A score says whether a change helped. It does not say why a lesion was lost: a lesion that fell between surveyed slices, one that was shown but not recognised, and one ranked below the false-positive budget all lower the score equally, yet each calls for a different fix. Improving a detector from its own misses, round after round, raises three problems.</p>
   <div class="cards">
     <div class="card"><h4>Error attribution</h4><p>The usual evaluation reports one number per system, not why each lesion was missed.</p></div>
@@ -262,6 +263,8 @@ footer a{color:var(--muted)}
     </tbody>
   </table></div>
   <p class="note narrow"><sup>*</sup>Removed together with r2. The r3 row is compared under greedy SFT reads.</p>
+
+  <div class="take narrow" style="margin-top:22px"><b>Explore every lesion.</b> The <a href="explorer.html" style="color:var(--accent-ink)">Lesion explorer</a> shows all 396 held-out test lesions under every accepted system from r0 to r15 and the frontier MLLMs: found or missed at any false-positive budget, the cause of each miss, one lesion fixed by each revision, and the mentor's full ledger. The <a href="viewer.html" style="color:var(--accent-ink)">Scan viewer</a> lets you scroll through six test scans in 3D, with the reference lesions and the points reported by r15, r0, Gemini&nbsp;3.7 Flash and Claude Opus&nbsp;5.5.</div>
 
   <div class="narrow">
   <h3>Every gain comes with its explanation</h3>
