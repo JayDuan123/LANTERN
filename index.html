@@ -179,10 +179,6 @@ footer a{color:var(--muted)}
     <div class="task"><div class="k">LP</div><div class="t">Learning Policy</div><p>Training data, objective, reward. Targets <em>not recognized</em>, <em>inconsistent</em>.</p></div>
     <div class="task"><div class="k">DA</div><div class="t">Decision Aggregation</div><p>Merging and ranking of reads. Targets <em>inconsistent</em>, <em>rejected</em>.</p></div>
   </div>
-  <figure style="margin-top:22px">
-    <img src="static/failure_examples.png" alt="Four real validation examples, one per failure cause">
-    <figcaption><b>The four failure causes on real validation scans.</b> Green box: ground-truth lesion; orange +: reported point; magenta +: reported point outside the 1 FP per scan budget. (a) Not seen: the 5 mm survey reads <i>z</i>&nbsp;=&nbsp;34, the lesion spans <i>z</i>&nbsp;=&nbsp;30–33. (b) Not recognized: the lesion is on a read slice and no seed reports it. (c) Inconsistent: seed 20 misses a lesion that seed 22 finds on the same slice. (d) Rejected: r15 reports the lesion, but its candidate ranks below the budget.</figcaption>
-  </figure>
 </div></section>
 
 <section><div class="wrap">
